@@ -1,50 +1,55 @@
 package main
 
-// artisan "github.com/rkrasiuk/cypherr-artisan"
+// artisan "github.com/rkrasiuk/cypher-artisan"
 
 import (
 	"fmt"
-	cypherr "test/neo4j"
+	cypher "test/neo4j"
 )
 
 func main() {
 
-	// node3 := cypherr.NewNode().SetVariable("n").SetLabel("TEST").SetProps(
-	// 	cypherr.Prop{Key: "flag", Value: 12.5})
-	// node := cypherr.NewNode().SetVariable("n").SetLabels(cypherr.Or, "PERSON", "PEOPLE").SetProps(
-	// 	cypherr.Prop{Key: "flag", Value: 12.5})
+	node3 := cypher.NewNode().SetVariable("n").SetLabel("TEST").SetProps(
+		cypher.Prop{Key: "flag", Value: 12.5}).ToPattern()
 
-	// node2 := cypherr.NewNode().SetVariable("a").SetLabel("ATTENTION").SetProps(
-	// 	cypherr.Prop{Key: "height", Value: 190})
+	node := cypher.NewNode().SetVariable("n").SetLabels(cypher.Or, "PERSON", "PEOPLE").SetProps(
+		cypher.Prop{Key: "flag", Value: 12.5})
 
-	// pattern := cypherr.NewEdge().SetVariable("e").SetLabel("ACTION").
-	// 	SetPath(cypherr.Outgoing).
-	// 	Relationship(cypherr.FullRelationship{
-	// 		LeftNode:  node,
-	// 		RightNode: node2,
-	// 	})
+	node2 := cypher.NewNode().SetVariable("a").SetLabel("ATTENTION").SetProps(
+		cypher.Prop{Key: "height", Value: 190})
 
-	// pattern2 := cypherr.NewEdge().SetVariable("f").SetLabel("WINNING").
-	// 	SetPath(cypherr.Outgoing).
+	pattern := cypher.NewEdge().SetVariable("e").SetLabel("ACTION").
+		SetPath(cypher.Outgoing).
+		Relationship(cypher.FullRelationship{
+			LeftNode:  node,
+			RightNode: node2,
+		})
+
+	// pattern2 := cypher.NewEdge().SetVariable("f").SetLabel("WINNING").
+	// 	SetPath(cypher.Outgoing).
 	// 	PartialRelationship(
-	// 		cypherr.PartialRelationship{
+	// 		cypher.PartialRelationship{
 	// 			LeftDirection: true,
 	// 			Node:          node3})
 
-	res, errors := cypherr.NewQueryBuilder().
-		Match().
-		Where(cypherr.WhereQuery{
+	res, errors := cypher.NewQueryBuilder().
+		Match(pattern).
+		Match(node3).
+		Where(cypher.ConditionalQuery{
 			Name:            "p",
 			Field:           "online",
 			Check:           false,
-			BooleanOperator: cypherr.EqualToOperator,
-			Condition:       cypherr.AND,
-		}, cypherr.WhereQuery{
+			BooleanOperator: cypher.EqualToOperator,
+			Condition:       cypher.AND,
+		}, cypher.ConditionalQuery{
 			Name:            "n",
 			Field:           "age",
 			Check:           21,
-			BooleanOperator: cypherr.EqualToOperator,
-		}).Execute()
+			BooleanOperator: cypher.EqualToOperator,
+		}).
+		Return(cypher.ConditionalQuery{Name: "t", Field: "prop"}).
+		OrderBy(cypher.ConditionalQuery{Name: "t", Field: "peop", OrderByOperator: cypher.Desc}).
+		Execute()
 
 	fmt.Println(res)
 	fmt.Println(errors)

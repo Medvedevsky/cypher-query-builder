@@ -1,4 +1,4 @@
-package cypherr
+package cypher
 
 import (
 	"fmt"
@@ -30,14 +30,14 @@ func (p Props) ToCypher() string {
 			}
 
 			if k == reflect.String {
-                propsArr = append(propsArr, fmt.Sprintf("%v: '%v'", key, prop))
+				propsArr = append(propsArr, fmt.Sprintf("%v: '%v'", key, prop))
 				break
-            }
-			
+			}
+
 			if k == reflect.Int || k == reflect.Int8 || k == reflect.Int16 || k == reflect.Int32 || k == reflect.Int64 ||
-			k == reflect.Uint || k == reflect.Uint8 || k == reflect.Uint16 || k == reflect.Uint32 || k == reflect.Uint64 ||
-			k == reflect.Float32 || k == reflect.Float64 {
-				propsArr = append(propsArr, fmt.Sprintf("%v: %v", key, prop)) 
+				k == reflect.Uint || k == reflect.Uint8 || k == reflect.Uint16 || k == reflect.Uint32 || k == reflect.Uint64 ||
+				k == reflect.Float32 || k == reflect.Float64 {
+				propsArr = append(propsArr, fmt.Sprintf("%v: %v", key, prop))
 			}
 
 		}

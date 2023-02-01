@@ -1,11 +1,11 @@
-package cypherr
+package cypher
 
 import (
 	"fmt"
 	"reflect"
 )
 
-// QueryBuilder ...
+// *QueryBuilder ...
 type QueryBuilder struct {
 	query  string
 	errors []error
@@ -64,32 +64,32 @@ func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...QueryPatte
 	return query
 }
 
-func (qb QueryBuilder) Match(patterns ...QueryPattern) QueryBuilder {
+func (qb *QueryBuilder) Match(patterns ...QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("MATCH", patterns...)
 	return qb
 }
 
-func (qb QueryBuilder) OptionlMath(patterns ...QueryPattern) QueryBuilder {
+func (qb *QueryBuilder) OptionlMath(patterns ...QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("OPTIONAL MATH", patterns...)
 	return qb
 }
 
-func (qb QueryBuilder) Where(whereClauses ...WhereQuery) QueryBuilder {
+func (qb *QueryBuilder) Where(whereClauses ...ConditionalQuery) *QueryBuilder {
 	if len(whereClauses) == 0 {
 		qb.addError(fmt.Errorf("error empty where clause"))
 		return qb
 	}
 
-	query := qb.query + "WHERE "
-	query += whereMap(whereClauses...)
-	query += "\n"
+	qb.query += "WHERE "
+	qb.query += whereMap(whereClauses...)
+	qb.query += "\n"
 
-	return QueryBuilder{query: query}
+	return qb
 }
 
 // With ...
-// func (qb QueryBuilder) With(withClauses ...string) QueryBuilder {
-// 	return QueryBuilder{
+// func (qb *QueryBuilder) With(withClauses ...string) *QueryBuilder {
+// 	return *QueryBuilder{
 // 		qb.query + `
 // 		WITH
 // 			` + strings.Join(withClauses, ", "),
@@ -97,34 +97,43 @@ func (qb QueryBuilder) Where(whereClauses ...WhereQuery) QueryBuilder {
 // }
 
 // Return ...
-func (qb QueryBuilder) Return(returnClauses ...ReturnQuery) QueryBuilder {
+func (qb *QueryBuilder) Return(returnClauses ...ConditionalQuery) *QueryBuilder {
 
 	if len(returnClauses) == 0 {
 		qb.addError(fmt.Errorf("error empty where clause"))
 		return qb
 	}
-	query := qb.query + "RETRUN "
-	query += returnMap(returnClauses...)
-	query += "\n"
+	qb.query += "RETRUN "
+	qb.query += conditionalMap(returnClauses...)
+	qb.query += "\n"
 
-	return QueryBuilder{query: query}
-	// return QueryBuilder{
+	return qb
+	// return *QueryBuilder{
 	// 	qb.query + "RETURN " + strings.Join(returnClauses, ", "),
 	// }
 }
 
 // OrderBy ...
-// func (qb QueryBuilder) OrderBy(orderByClause string) QueryBuilder {
-// 	return QueryBuilder{
-// 		qb.query + `
-// 		ORDER BY
-// 		` + orderByClause,
-// 	}
-// }
+func (qb *QueryBuilder) OrderBy(orderByClause ConditionalQuery) *QueryBuilder {
+	if reflect.ValueOf(orderByClause).IsZero() {
+		qb.addError(fmt.Errorf("error empty OrderBy clause"))
+		return qb
+	}
+
+	qb.query += "ORDER BY "
+	if orderByClause.Field != "" {
+		qb.query += fmt.Sprintf("%v.%v ", orderByClause.Name, orderByClause.Field) + string(orderByClause.OrderByOperator)
+	} else {
+		qb.query += fmt.Sprintf("%v ", orderByClause.Name) + string(orderByClause.OrderByOperator)
+	}
+	qb.query += "\n"
+
+	return qb
+}
 
 // OrderByDesc ...
-// func (qb QueryBuilder) OrderByDesc(orderByDescClause string) QueryBuilder {
-// 	return QueryBuilder{
+// func (qb *QueryBuilder) OrderByDesc(orderByDescClause string) *QueryBuilder {
+// 	return *QueryBuilder{
 // 		qb.query + `
 // 		ORDER BY
 // 			` + orderByDescClause + ` DESC`,
@@ -132,15 +141,15 @@ func (qb QueryBuilder) Return(returnClauses ...ReturnQuery) QueryBuilder {
 // }
 
 // Limit ...
-// func (qb QueryBuilder) Limit(limit int) QueryBuilder {
-// 	return QueryBuilder{
+// func (qb *QueryBuilder) Limit(limit int) *QueryBuilder {
+// 	return *QueryBuilder{
 // 		qb.query + `
 // 		LIMIT	` + strconv.Itoa(limit),
 // 	}
 // }
 
 // Execute ...
-func (qb QueryBuilder) Execute() (string, []error) {
+func (qb *QueryBuilder) Execute() (string, []error) {
 	return qb.query, qb.errors
 }
 
@@ -154,7 +163,7 @@ func Assign(name, pattern string) string {
 	return fmt.Sprintf("%v = %v", name, pattern)
 }
 
-func whereMap(conditions ...WhereQuery) string {
+func whereMap(conditions ...ConditionalQuery) string {
 	query := ""
 	for _, condition := range conditions {
 		query += fmt.Sprintf("%v.%v %v %v %v ", condition.Name, condition.Field, condition.BooleanOperator, condition.Check, condition.Condition)
@@ -163,7 +172,7 @@ func whereMap(conditions ...WhereQuery) string {
 	return query
 }
 
-func returnMap(conditions ...ReturnQuery) string {
+func conditionalMap(conditions ...ConditionalQuery) string {
 	res := ""
 	for i, condition := range conditions {
 		if i != len(conditions)-1 {

@@ -1,4 +1,4 @@
-package cypherr
+package cypher
 
 type Label struct {
 	Names     []string

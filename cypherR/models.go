@@ -1,4 +1,4 @@
-package cypherr
+package cypher
 
 type QueryPattern struct {
 	PartialRelationship PartialRelationship
@@ -22,17 +22,14 @@ type OnlyNode struct {
 	Node *Node
 }
 
-type WhereQuery struct {
-	Name            string
-	Field           string
-	Check           interface{}
-	Condition       Condition
-	BooleanOperator BooleanOperator
-}
-
-type ReturnQuery struct {
+type ConditionalQuery struct {
 	Name  string
 	Field string
+	Check interface{}
+
+	Condition       Condition
+	OrderByOperator OrderByOperator
+	BooleanOperator BooleanOperator
 }
 
 type Condition string
@@ -54,4 +51,11 @@ const (
 	EqualToOperator BooleanOperator = "="
 	InOperator      BooleanOperator = "IN"
 	IsOperator      BooleanOperator = "IS"
+)
+
+type OrderByOperator string
+
+const (
+	Asc  OrderByOperator = "ASC"
+	Desc OrderByOperator = "DESC"
 )
