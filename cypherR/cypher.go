@@ -106,7 +106,6 @@ func (qb *QueryBuilder) Where(whereClauses ...ConditionalQuery) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) Return(returnClauses ...ConditionalQuery) *QueryBuilder {
-
 	if len(returnClauses) == 0 {
 		qb.addError(fmt.Errorf("error empty where clause"))
 		return qb
