@@ -3,6 +3,7 @@ package cypher
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 )
 
 // *QueryBuilder ...
@@ -74,6 +75,23 @@ func (qb *QueryBuilder) OptionlMath(patterns ...QueryPattern) *QueryBuilder {
 	return qb
 }
 
+func (qb *QueryBuilder) Merge(patterns ...QueryPattern) *QueryBuilder {
+	qb.query += qb.queryPatternUsage("MERGE", patterns...)
+	return qb
+}
+
+func (qb *QueryBuilder) Delete(detchDelete bool, pattern ConditionalQuery) *QueryBuilder {
+	p := fmt.Sprintf("%v", pattern.Name)
+	if detchDelete {
+		qb.query += "DETACH DELETE " + p
+	} else {
+		qb.query += "DELETE " + p
+	}
+	qb.query += "\n"
+
+	return qb
+}
+
 func (qb *QueryBuilder) Where(whereClauses ...ConditionalQuery) *QueryBuilder {
 	if len(whereClauses) == 0 {
 		qb.addError(fmt.Errorf("error empty where clause"))
@@ -87,16 +105,6 @@ func (qb *QueryBuilder) Where(whereClauses ...ConditionalQuery) *QueryBuilder {
 	return qb
 }
 
-// With ...
-// func (qb *QueryBuilder) With(withClauses ...string) *QueryBuilder {
-// 	return *QueryBuilder{
-// 		qb.query + `
-// 		WITH
-// 			` + strings.Join(withClauses, ", "),
-// 	}
-// }
-
-// Return ...
 func (qb *QueryBuilder) Return(returnClauses ...ConditionalQuery) *QueryBuilder {
 
 	if len(returnClauses) == 0 {
@@ -113,7 +121,18 @@ func (qb *QueryBuilder) Return(returnClauses ...ConditionalQuery) *QueryBuilder 
 	// }
 }
 
-// OrderBy ...
+func (qb *QueryBuilder) With(withClauses ...ConditionalQuery) *QueryBuilder {
+	if len(withClauses) == 0 {
+		qb.addError(fmt.Errorf("error empty WITH clause"))
+		return qb
+	}
+	qb.query += "WITH "
+	qb.query += withMap(withClauses...)
+	qb.query += "\n"
+
+	return qb
+}
+
 func (qb *QueryBuilder) OrderBy(orderByClause ConditionalQuery) *QueryBuilder {
 	if reflect.ValueOf(orderByClause).IsZero() {
 		qb.addError(fmt.Errorf("error empty OrderBy clause"))
@@ -131,22 +150,12 @@ func (qb *QueryBuilder) OrderBy(orderByClause ConditionalQuery) *QueryBuilder {
 	return qb
 }
 
-// OrderByDesc ...
-// func (qb *QueryBuilder) OrderByDesc(orderByDescClause string) *QueryBuilder {
-// 	return *QueryBuilder{
-// 		qb.query + `
-// 		ORDER BY
-// 			` + orderByDescClause + ` DESC`,
-// 	}
-// }
-
 // Limit ...
-// func (qb *QueryBuilder) Limit(limit int) *QueryBuilder {
-// 	return *QueryBuilder{
-// 		qb.query + `
-// 		LIMIT	` + strconv.Itoa(limit),
-// 	}
-// }
+func (qb *QueryBuilder) Limit(limit int) *QueryBuilder {
+	qb.query += "LIMIT " + strconv.Itoa(limit) + "\n"
+
+	return qb
+}
 
 // Execute ...
 func (qb *QueryBuilder) Execute() (string, []error) {
@@ -167,6 +176,19 @@ func whereMap(conditions ...ConditionalQuery) string {
 	query := ""
 	for _, condition := range conditions {
 		query += fmt.Sprintf("%v.%v %v %v %v ", condition.Name, condition.Field, condition.BooleanOperator, condition.Check, condition.Condition)
+	}
+
+	return query
+}
+
+func withMap(conditions ...ConditionalQuery) string {
+	query := ""
+	for i, condition := range conditions {
+		if i != len(conditions)-1 {
+			query += fmt.Sprintf("%v", condition.Name) + ","
+			continue
+		}
+		query += fmt.Sprintf("%v", condition.Name)
 	}
 
 	return query

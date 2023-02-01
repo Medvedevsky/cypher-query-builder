@@ -10,7 +10,7 @@ import (
 func main() {
 
 	node3 := cypher.NewNode().SetVariable("n").SetLabel("TEST").SetProps(
-		cypher.Prop{Key: "flag", Value: 12.5}).ToPattern()
+		cypher.Prop{Key: "flag", Value: 12.5})
 
 	node := cypher.NewNode().SetVariable("n").SetLabels(cypher.Or, "PERSON", "PEOPLE").SetProps(
 		cypher.Prop{Key: "flag", Value: 12.5})
@@ -25,16 +25,18 @@ func main() {
 			RightNode: node2,
 		})
 
-	// pattern2 := cypher.NewEdge().SetVariable("f").SetLabel("WINNING").
-	// 	SetPath(cypher.Outgoing).
-	// 	PartialRelationship(
-	// 		cypher.PartialRelationship{
-	// 			LeftDirection: true,
-	// 			Node:          node3})
+	pattern2 := cypher.NewEdge().SetVariable("f").SetLabel("WINNING").
+		SetPath(cypher.Incoming).
+		Relationship(
+			cypher.FullRelationship{
+				LeftNode:  node2,
+				RightNode: node3,
+			})
 
 	res, errors := cypher.NewQueryBuilder().
 		Match(pattern).
-		Match(node3).
+		Match(node3.ToPattern()).
+		Merge(pattern2).
 		Where(cypher.ConditionalQuery{
 			Name:            "p",
 			Field:           "online",
@@ -47,8 +49,11 @@ func main() {
 			Check:           21,
 			BooleanOperator: cypher.EqualToOperator,
 		}).
-		Return(cypher.ConditionalQuery{Name: "t", Field: "prop"}).
+		With(cypher.ConditionalQuery{Name: "t"}, cypher.ConditionalQuery{Name: "a"}).
 		OrderBy(cypher.ConditionalQuery{Name: "t", Field: "peop", OrderByOperator: cypher.Desc}).
+		Delete(true, cypher.ConditionalQuery{Name: "t"}).
+		Limit(5).
+		Return(cypher.ConditionalQuery{Name: "t", Field: "prop"}).
 		Execute()
 
 	fmt.Println(res)
