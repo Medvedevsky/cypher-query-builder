@@ -5,6 +5,6 @@ type Label struct {
 	Condition Condition
 }
 
-func NewLabel() *Label {
-	return &Label{}
-}
+// func NewLabel() *Label {
+// 	return &Label{}
+// }

@@ -8,55 +8,31 @@ import (
 )
 
 func main() {
+	charlie := cypher.NewNode().
+		SetVariable("charlie").
+		SetLabel("Person").
+		SetProps(cypher.Prop{Key: "name", Value: "Martin Sheen"})
 
-	node3 := cypher.NewNode().SetVariable("n").SetLabel("TEST").SetProps(
-		cypher.Prop{Key: "flag", Value: 12.5})
+	rob := cypher.NewNode().
+		SetVariable("rob").
+		SetLabel("Person").
+		SetProps(cypher.Prop{Key: "name", Value: "Rob Reiner"})
 
-	node := cypher.NewNode().SetVariable("n").SetLabels(cypher.Or, "PERSON", "PEOPLE").SetProps(
-		cypher.Prop{Key: "flag", Value: 12.5})
-
-	node2 := cypher.NewNode().SetVariable("a").SetLabel("ATTENTION").SetProps(
-		cypher.Prop{Key: "height", Value: 190})
-
-	pattern := cypher.NewEdge().SetVariable("e").SetLabel("ACTION").
-		SetPath(cypher.Outgoing).
+	edge := cypher.NewEdge().
+		SetLabel("OLD FRIENDS").
 		Relationship(cypher.FullRelationship{
-			LeftNode:  node,
-			RightNode: node2,
+			LeftNode:  rob,
+			RightNode: charlie,
 		})
 
-	pattern2 := cypher.NewEdge().SetVariable("f").SetLabel("WINNING").
-		SetPath(cypher.Incoming).
-		Relationship(
-			cypher.FullRelationship{
-				LeftNode:  node2,
-				RightNode: node3,
-			})
-
-	res, errors := cypher.NewQueryBuilder().
-		Match(pattern).
-		Match(node3.ToPattern()).
-		Merge(pattern2).
-		Where(cypher.ConditionalQuery{
-			Name:            "p",
-			Field:           "online",
-			Check:           false,
-			BooleanOperator: cypher.EqualToOperator,
-			Condition:       cypher.AND,
-		}, cypher.ConditionalQuery{
-			Name:            "n",
-			Field:           "age",
-			Check:           21,
-			BooleanOperator: cypher.EqualToOperator,
-		}).
-		With(cypher.ConditionalQuery{Name: "t"}, cypher.ConditionalQuery{Name: "a"}).
-		OrderBy(cypher.ConditionalQuery{Name: "t", Field: "peop", OrderByOperator: cypher.Desc}).
-		Delete(true, cypher.ConditionalQuery{Name: "t"}).
-		Limit(5).
-		Return(cypher.ConditionalQuery{Name: "t", Field: "prop"}).
+	res, error := cypher.
+		NewQueryBuilder().
+		Match(charlie.ToPattern()).
+		Match(rob.ToPattern()).
+		Create(edge).
 		Execute()
 
 	fmt.Println(res)
-	fmt.Println(errors)
+	fmt.Println(error)
 
 }
