@@ -59,3 +59,20 @@ const (
 	Asc  OrderByOperator = "ASC"
 	Desc OrderByOperator = "DESC"
 )
+
+// Path ...
+type Path string
+
+const (
+	// Plain --
+	Plain Path = "--"
+
+	// Outgoing -->
+	Outgoing Path = "-->"
+
+	// Incoming <--
+	Incoming Path = "<--"
+
+	// Bidirectional <-->
+	Bidirectional Path = "<-->"
+)
