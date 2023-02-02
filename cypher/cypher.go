@@ -80,6 +80,11 @@ func (qb *QueryBuilder) Merge(patterns ...QueryPattern) *QueryBuilder {
 	return qb
 }
 
+func (qb *QueryBuilder) Create(patterns ...QueryPattern) *QueryBuilder {
+	qb.query += qb.queryPatternUsage("CREATE", patterns...)
+	return qb
+}
+
 func (qb *QueryBuilder) Delete(detchDelete bool, pattern ConditionalQuery) *QueryBuilder {
 	p := fmt.Sprintf("%v", pattern.Name)
 	if detchDelete {
