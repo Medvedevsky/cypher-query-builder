@@ -5,55 +5,38 @@ import (
 	"strings"
 )
 
-// Path ...
-type Path string
-
-const (
-	// Plain --
-	Plain Path = "--"
-
-	// Outgoing -->
-	Outgoing Path = "-->"
-
-	// Incoming <--
-	Incoming Path = "<--"
-
-	// Bidirectional <-->
-	Bidirectional Path = "<-->"
-)
-
 // Edge ...
 type Edge struct {
-	Variable string
-	*Label
+	variable   string
+	label      Label
 	properties Props
 	path       Path
-	Condition  Condition
+	condition  Condition
 }
 
 // NewEdge ...
 func NewEdge() *Edge {
 	return &Edge{
-		Variable:   "",
-		Label:      NewLabel(),
+		variable:   "",
+		label:      Label{},
 		properties: Props{},
 		path:       "",
 	}
 }
 
 func (e *Edge) SetVariable(name string) *Edge {
-	e.Variable = name
+	e.variable = name
 	return e
 }
 
 func (e *Edge) SetLabel(label string) *Edge {
-	e.Names = append(e.Names, label)
+	e.label.Names = append(e.label.Names, label)
 	return e
 }
 
 func (e *Edge) SetLabels(condition Condition, labels ...string) *Edge {
-	e.Names = append(e.Names, labels...)
-	e.Condition = condition
+	e.label.Names = append(e.label.Names, labels...)
+	e.condition = condition
 	return e
 }
 
@@ -102,12 +85,6 @@ func (e Edge) PartialRelationshipBuild(p PartialRelationship) string {
 
 func (e Edge) RelationshipBuild(f FullRelationship) string {
 
-	// if f.Nodes == nil && len(f.Nodes) == 2 {
-	// 	//error
-	// 	fmt.Println("error RelationshipBuild not have nodes")
-	// 	return ""
-	// }
-
 	if f.LeftNode == nil || f.RightNode == nil {
 		//error
 		fmt.Println("error RelationshipBuild not have nodes")
@@ -131,16 +108,16 @@ func (e Edge) RelationshipMulti(edges ...string) string {
 func (e Edge) ToCypher() string {
 	edge := ""
 
-	if e.Variable != "" {
-		edge += e.Variable
+	if e.variable != "" {
+		edge += e.variable
 	}
 
-	if len(e.Label.Names) > 0 {
+	if len(e.label.Names) > 0 {
 		condition := ""
-		if e.Label.Condition != "" {
-			condition = fmt.Sprintf("%v", e.Label.Condition)
+		if e.label.Condition != "" {
+			condition = fmt.Sprintf("%v", e.label.Condition)
 		}
-		edge += fmt.Sprintf(":%v", strings.Join(e.Label.Names, condition)) + " "
+		edge += fmt.Sprintf(":%v", strings.Join(e.label.Names, condition)) + " "
 	}
 
 	if len(e.properties) > 0 {
