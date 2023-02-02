@@ -115,6 +115,9 @@ func (qb *QueryBuilder) Return(returnClauses ...ConditionalQuery) *QueryBuilder 
 	qb.query += "\n"
 
 	return qb
+	// return *QueryBuilder{
+	// 	qb.query + "RETURN " + strings.Join(returnClauses, ", "),
+	// }
 }
 
 func (qb *QueryBuilder) With(withClauses ...ConditionalQuery) *QueryBuilder {
