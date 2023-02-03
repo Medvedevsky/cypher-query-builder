@@ -22,16 +22,6 @@ type OnlyNode struct {
 	Node *Node
 }
 
-type ConditionalQuery struct {
-	Name  string
-	Field string
-	Check interface{}
-
-	Condition       Condition
-	OrderByOperator OrderByOperator
-	BooleanOperator BooleanOperator
-}
-
 type Condition string
 
 const (
@@ -48,9 +38,17 @@ const (
 type BooleanOperator string
 
 const (
-	EqualToOperator BooleanOperator = "="
-	InOperator      BooleanOperator = "IN"
-	IsOperator      BooleanOperator = "IS"
+	LessThanOperator             BooleanOperator = "<"
+	GreaterThanOperator          BooleanOperator = ">"
+	LessThanOrEqualToOperator    BooleanOperator = "<="
+	GreaterThanOrEqualToOperator BooleanOperator = ">="
+	EqualToOperator              BooleanOperator = "="
+	InOperator                   BooleanOperator = "IN"
+	IsOperator                   BooleanOperator = "IS"
+	RegexEqualToOperator         BooleanOperator = "=~"
+	StartsWithOperator           BooleanOperator = "STARTS WITH"
+	EndsWithOperator             BooleanOperator = "ENDS WITH"
+	ContainsOperator             BooleanOperator = "CONTAINS"
 )
 
 type OrderByOperator string

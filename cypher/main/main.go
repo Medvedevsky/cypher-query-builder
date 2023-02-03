@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+
 	charlie := cypher.NewNode().
 		SetVariable("charlie").
 		SetLabel("Person").
@@ -19,20 +20,25 @@ func main() {
 		SetProps(cypher.Prop{Key: "name", Value: "Rob Reiner"})
 
 	edge := cypher.NewEdge().
-		SetLabel("OLD FRIENDS").
+		SetLabel("OLD FRIENDS").SetPath(cypher.Incoming).
 		Relationship(cypher.FullRelationship{
-			LeftNode:  rob,
-			RightNode: charlie,
+			LeftNode:  charlie,
+			RightNode: rob,
 		})
 
 	res, error := cypher.
 		NewQueryBuilder().
-		Match(charlie.ToPattern()).
-		Match(rob.ToPattern()).
-		Create(edge).
+		Match(edge).
+		With(cypher.WithConfig{Name: "next"}).
+		CALL(
+			cypher.NewQueryBuilder().
+				With(cypher.WithConfig{Name: "next"}).
+				Match(cypher.NewNode().
+					SetVariable("current").
+					SetLabel("ListHead").ToPattern())).
+		Return(cypher.ReturnConfig{Name: "charlie", As: "from"}, cypher.ReturnConfig{Name: "next", As: "to"}).
 		Execute()
 
 	fmt.Println(res)
 	fmt.Println(error)
-
 }
