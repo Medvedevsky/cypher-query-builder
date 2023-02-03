@@ -239,7 +239,7 @@ func (qb *QueryBuilder) CALL(nqb *QueryBuilder) *QueryBuilder {
 	}
 
 	subquery = buffer.String()
-	res += "\t" + subquery + "}"
+	res += "\t" + subquery + "}\n"
 	qb.query += res
 
 	return qb

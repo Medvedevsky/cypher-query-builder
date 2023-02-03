@@ -8,6 +8,7 @@ import (
 type ReturnConfig struct {
 	Name string
 	Type string
+	As   string
 }
 
 func (r *ReturnConfig) ToString() (string, error) {
@@ -21,6 +22,10 @@ func (r *ReturnConfig) ToString() (string, error) {
 		query += fmt.Sprintf("%s.%s", r.Name, r.Type)
 	} else {
 		query += r.Name
+	}
+
+	if r.As != "" {
+		query += fmt.Sprintf(" AS %s", r.As)
 	}
 	query += ", "
 
