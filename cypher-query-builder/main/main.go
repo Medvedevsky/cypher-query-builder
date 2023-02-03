@@ -19,7 +19,8 @@ func main() {
 		SetProps(pattern.Prop{Key: "name", Value: "Rob Reiner"})
 
 	edge := pattern.NewEdge().
-		SetLabel("OLD FRIENDS").SetPath(pattern.Incoming).
+		SetLabel("OLD FRIENDS").
+		SetPath(pattern.Incoming).
 		Relationship(pattern.FullRelationship{
 			LeftNode:  charlie,
 			RightNode: rob,
@@ -36,6 +37,7 @@ func main() {
 					SetVariable("current").
 					SetLabel("ListHead").ToPattern())).
 		Return(pattern.ReturnConfig{Name: "charlie", As: "from"}, pattern.ReturnConfig{Name: "next", As: "to"}).
+		Delete(true, pattern.RemoveConfig{Name: "a", Labels: []string{"TEST"}}).
 		Execute()
 
 	fmt.Println(res)
