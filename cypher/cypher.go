@@ -1,28 +1,44 @@
 package cypher
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
-// *QueryBuilder ...
 type QueryBuilder struct {
 	query  string
 	errors []error
 }
 
-// NewQueryBuilder ...
 func NewQueryBuilder() *QueryBuilder {
 	return &QueryBuilder{}
+}
+
+// подобие полиморфизма подтипов
+func (qb *QueryBuilder) mapConfigToString(clauses ...QueryConfig) string {
+	query := ""
+
+	for _, clause := range clauses {
+		res, error := clause.ToString()
+
+		if error != nil {
+			qb.addError(error)
+		}
+		query += res
+	}
+
+	return query
 }
 
 func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 	query := ""
 
 	if reflect.ValueOf(pattern).IsZero() {
-		// error
-		qb.addError(fmt.Errorf("error match QueryPattern null"))
+		qb.addError(errors.New("error match QueryPattern null"))
 		return ""
 	}
 
@@ -51,9 +67,8 @@ func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 
 func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...QueryPattern) string {
 	if len(patterns) == 0 {
-		// error
 		error := fmt.Sprintf("error %s patterns null", clauses)
-		qb.addError(fmt.Errorf(error))
+		qb.addError(errors.New(error))
 		return ""
 	}
 	query := clauses + " "
@@ -85,138 +100,153 @@ func (qb *QueryBuilder) Create(patterns ...QueryPattern) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) Delete(detchDelete bool, pattern ConditionalQuery) *QueryBuilder {
-	p := fmt.Sprintf("%v", pattern.Name)
-	if detchDelete {
-		qb.query += "DETACH DELETE " + p
-	} else {
-		qb.query += "DELETE " + p
+func (qb *QueryBuilder) Delete(detchDelete bool, deleteClause RemoveConfig) *QueryBuilder {
+	if reflect.ValueOf(deleteClause).IsZero() {
+		qb.addError(errors.New("error empty Delete clause"))
+		return qb
 	}
+
+	if detchDelete {
+		qb.query += "DETACH DELETE "
+	} else {
+		qb.query += "DELETE "
+	}
+
+	res := qb.mapConfigToString(&deleteClause)
+	qb.query += res
+
 	qb.query += "\n"
 
 	return qb
 }
 
-func (qb *QueryBuilder) Where(whereClauses ...ConditionalQuery) *QueryBuilder {
+func (qb *QueryBuilder) Where(whereClauses ...ConditionalConfig) *QueryBuilder {
 	if len(whereClauses) == 0 {
-		qb.addError(fmt.Errorf("error empty where clause"))
+		qb.addError(errors.New("error empty where clause"))
 		return qb
 	}
 
 	qb.query += "WHERE "
-	qb.query += whereMap(whereClauses...)
+	for _, clause := range whereClauses {
+		res := qb.mapConfigToString(&clause)
+		qb.query += res
+	}
 	qb.query += "\n"
 
 	return qb
 }
 
-func (qb *QueryBuilder) Return(returnClauses ...ConditionalQuery) *QueryBuilder {
+func (qb *QueryBuilder) Return(returnClauses ...ReturnConfig) *QueryBuilder {
 	if len(returnClauses) == 0 {
-		qb.addError(fmt.Errorf("error empty where clause"))
+		qb.addError(errors.New("error empty where clause"))
 		return qb
 	}
-	qb.query += "RETRUN "
-	qb.query += conditionalMap(returnClauses...)
-	qb.query += "\n"
+
+	query := "RETRUN "
+	for _, clause := range returnClauses {
+		res := qb.mapConfigToString(&clause)
+		query += res
+	}
+	query = strings.TrimSuffix(query, ", ")
+	query += "\n"
+	qb.query += query
 
 	return qb
-	// return *QueryBuilder{
-	// 	qb.query + "RETURN " + strings.Join(returnClauses, ", "),
-	// }
 }
 
-func (qb *QueryBuilder) With(withClauses ...ConditionalQuery) *QueryBuilder {
+func (qb *QueryBuilder) Remove(removeClauses RemoveConfig) *QueryBuilder {
+	if reflect.ValueOf(removeClauses).IsZero() {
+		qb.addError(errors.New("error empty where clause"))
+		return qb
+	}
+
+	query := "REMOVE "
+	qb.mapConfigToString(&removeClauses)
+	query = strings.TrimSuffix(query, ", ")
+	query += "\n"
+	qb.query += query
+
+	return qb
+}
+
+func (qb *QueryBuilder) Union(all bool) *QueryBuilder {
+	if all {
+		qb.query += "UNION ALL\n"
+		return qb
+	}
+
+	qb.query += "UNION\n"
+	return qb
+}
+
+func (qb *QueryBuilder) With(withClauses ...WithConfig) *QueryBuilder {
 	if len(withClauses) == 0 {
-		qb.addError(fmt.Errorf("error empty WITH clause"))
+		qb.addError(errors.New("error empty WITH clause"))
 		return qb
 	}
-	qb.query += "WITH "
-	qb.query += withMap(withClauses...)
-	qb.query += "\n"
+
+	query := "WITH "
+	for _, clause := range withClauses {
+		res := qb.mapConfigToString(&clause)
+		query += res
+	}
+	query = strings.TrimSuffix(query, ", ")
+	query += "\n"
+	qb.query += query
 
 	return qb
 }
 
-func (qb *QueryBuilder) OrderBy(orderByClause ConditionalQuery) *QueryBuilder {
+func (qb *QueryBuilder) OrderBy(orderByClause OrderByConfig) *QueryBuilder {
 	if reflect.ValueOf(orderByClause).IsZero() {
-		qb.addError(fmt.Errorf("error empty OrderBy clause"))
+		qb.addError(errors.New("error empty OrderBy clause"))
 		return qb
 	}
 
 	qb.query += "ORDER BY "
-	if orderByClause.Field != "" {
-		qb.query += fmt.Sprintf("%v.%v ", orderByClause.Name, orderByClause.Field) + string(orderByClause.OrderByOperator)
-	} else {
-		qb.query += fmt.Sprintf("%v ", orderByClause.Name) + string(orderByClause.OrderByOperator)
-	}
+	res := qb.mapConfigToString(&orderByClause)
+	qb.query += res
 	qb.query += "\n"
 
 	return qb
 }
 
-// Limit ...
 func (qb *QueryBuilder) Limit(limit int) *QueryBuilder {
 	qb.query += "LIMIT " + strconv.Itoa(limit) + "\n"
 
 	return qb
 }
 
-// Execute ...
-func (qb *QueryBuilder) Execute() (string, []error) {
-	return qb.query, qb.errors
-}
-
-// As ...
-func As(initial, alias string) string {
-	return fmt.Sprintf("%v AS %v", initial, alias)
-}
-
-// Assign ...
-func Assign(name, pattern string) string {
-	return fmt.Sprintf("%v = %v", name, pattern)
-}
-
-func whereMap(conditions ...ConditionalQuery) string {
-	query := ""
-	for _, condition := range conditions {
-		query += fmt.Sprintf("%v.%v %v %v %v ", condition.Name, condition.Field, condition.BooleanOperator, condition.Check, condition.Condition)
+// CALL {subquery}
+func (qb *QueryBuilder) CALL(nqb *QueryBuilder) *QueryBuilder {
+	res := "CALL {\n"
+	subquery, error := nqb.Execute()
+	if error != nil {
+		qb.addError(error)
 	}
 
-	return query
-}
+	var buffer bytes.Buffer
 
-func withMap(conditions ...ConditionalQuery) string {
-	query := ""
-	for i, condition := range conditions {
-		if i != len(conditions)-1 {
-			query += fmt.Sprintf("%v", condition.Name) + ","
-			continue
-		}
-		query += fmt.Sprintf("%v", condition.Name)
-	}
+	for i, rune := range subquery {
+		buffer.WriteRune(rune)
+		char := string(rune)
 
-	return query
-}
-
-func conditionalMap(conditions ...ConditionalQuery) string {
-	res := ""
-	for i, condition := range conditions {
-		if i != len(conditions)-1 {
-			if condition.Field != "" {
-				res += fmt.Sprintf("%v.%v", condition.Name, condition.Field) + ", "
-			} else {
-				res += fmt.Sprintf("%v", condition.Name) + ", "
+		if char == "\n" {
+			if i != len(subquery)-1 {
+				buffer.WriteRune('\t')
 			}
-			continue
-		}
-
-		if condition.Field != "" {
-			res += fmt.Sprintf("%v.%v", condition.Name, condition.Field)
-		} else {
-			res += fmt.Sprintf("%v", condition.Name)
 		}
 	}
-	return res
+
+	subquery = buffer.String()
+	res += "\t" + subquery + "}"
+	qb.query += res
+
+	return qb
+}
+
+func (qb *QueryBuilder) Execute() (string, error) {
+	return qb.query, qb.errorBuild()
 }
 
 func (q *QueryBuilder) addError(e error) {
@@ -225,4 +255,18 @@ func (q *QueryBuilder) addError(e error) {
 	} else {
 		q.errors = append(q.errors, e)
 	}
+}
+
+func (qb *QueryBuilder) errorBuild() error {
+	if len(qb.errors) > 0 {
+		str := "errors found: "
+		for _, err := range qb.errors {
+			str += err.Error() + ";"
+		}
+
+		str = strings.TrimSuffix(str, ";") + fmt.Sprintf(" -- total errors (%v)", len(qb.errors))
+		return errors.New(str)
+	}
+
+	return nil
 }
