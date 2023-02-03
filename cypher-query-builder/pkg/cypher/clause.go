@@ -191,6 +191,7 @@ func (qb *QueryBuilder) With(withClauses ...pattern.WithConfig) *QueryBuilder {
 	for _, clause := range withClauses {
 		res := qb.mapConfigToString(&clause)
 		query += res
+		query += ", "
 	}
 	query = strings.TrimSuffix(query, ", ")
 	query += "\n"

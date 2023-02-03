@@ -18,7 +18,19 @@ type ConditionalConfig struct {
 
 func (condition *ConditionalConfig) ToString() (string, error) {
 	if condition.Name == "" {
-		return "", errors.New("var name can not be empty")
+		return "", errors.New("ConditionalConfig - var name can not be empty")
+	}
+
+	if condition.Field != "" && condition.Label != "" {
+		return "", errors.New("ConditionalConfig - only one of field or label can be set")
+	}
+
+	if condition.Check != nil && condition.ConditionOperator == "" {
+		return "", errors.New("ConditionalConfig - condition operator can not be empty with var check")
+	}
+
+	if condition.Label != "" && condition.ConditionFunction != "" {
+		return "", errors.New("ConditionalConfig - only one of label or condition function can be set")
 	}
 
 	query := ""
@@ -27,7 +39,7 @@ func (condition *ConditionalConfig) ToString() (string, error) {
 	if condition.Field != "" {
 		query += fmt.Sprintf("%s.%s", condition.Name, condition.Field)
 	} else if condition.Label != "" {
-		//we're done here
+		// or label
 		return fmt.Sprintf("%s:%s", condition.Name, condition.Label), nil
 	} else {
 		query = condition.Name
@@ -37,11 +49,15 @@ func (condition *ConditionalConfig) ToString() (string, error) {
 	if condition.ConditionOperator != "" {
 		query += fmt.Sprintf(" %s", condition.ConditionOperator)
 	} else if condition.ConditionFunction != "" {
-		//if its a condition function, we're done
+		//if its a condition function
 		return fmt.Sprintf("%s(%s)", condition.ConditionFunction, query), nil
 	}
-	query += fmt.Sprintf(" %v", condition.Check)
 
+	if condition.Check != nil {
+		query += fmt.Sprintf(" %v", condition.Check)
+	}
+
+	// if condition config not one
 	if condition.Condition != "" {
 		query += fmt.Sprintf(" %s ", condition.Condition)
 	}

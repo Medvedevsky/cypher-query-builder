@@ -21,13 +21,12 @@ func (wp *WithConfig) ToString() (string, error) {
 			query += fmt.Sprintf(".%s", wp.Field)
 		}
 	} else {
-		return "", errors.New("must define a function or name")
+		return "", errors.New("WithConfig - must define a function or name")
 	}
 
 	if wp.As != "" {
 		query += fmt.Sprintf(" AS %s", wp.As)
 	}
-	query += ", "
 
 	return query, nil
 }
