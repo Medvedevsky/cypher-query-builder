@@ -1,7 +1,5 @@
 package main
 
-// artisan "github.com/rkrasiuk/cypher-artisan"
-
 import (
 	"fmt"
 	cypher "test/neo4j"
