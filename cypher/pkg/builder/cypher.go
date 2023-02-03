@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"test/neo4j/pkg/pattern"
 )
 
 type QueryBuilder struct {
@@ -19,7 +20,7 @@ func NewQueryBuilder() *QueryBuilder {
 }
 
 // подобие полиморфизма подтипов
-func (qb *QueryBuilder) mapConfigToString(clauses ...QueryConfig) string {
+func (qb *QueryBuilder) mapConfigToString(clauses ...pattern.QueryConfig) string {
 	query := ""
 
 	for _, clause := range clauses {
@@ -34,7 +35,7 @@ func (qb *QueryBuilder) mapConfigToString(clauses ...QueryConfig) string {
 	return query
 }
 
-func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
+func (qb *QueryBuilder) queryPatternMap(pattern pattern.QueryPattern) string {
 	query := ""
 
 	if reflect.ValueOf(pattern).IsZero() {
@@ -65,7 +66,7 @@ func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 	return ""
 }
 
-func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...QueryPattern) string {
+func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...pattern.QueryPattern) string {
 	if len(patterns) == 0 {
 		error := fmt.Sprintf("error %s patterns null", clauses)
 		qb.addError(errors.New(error))
@@ -80,27 +81,27 @@ func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...QueryPatte
 	return query
 }
 
-func (qb *QueryBuilder) Match(patterns ...QueryPattern) *QueryBuilder {
+func (qb *QueryBuilder) Match(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("MATCH", patterns...)
 	return qb
 }
 
-func (qb *QueryBuilder) OptionlMath(patterns ...QueryPattern) *QueryBuilder {
+func (qb *QueryBuilder) OptionlMath(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("OPTIONAL MATH", patterns...)
 	return qb
 }
 
-func (qb *QueryBuilder) Merge(patterns ...QueryPattern) *QueryBuilder {
+func (qb *QueryBuilder) Merge(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("MERGE", patterns...)
 	return qb
 }
 
-func (qb *QueryBuilder) Create(patterns ...QueryPattern) *QueryBuilder {
+func (qb *QueryBuilder) Create(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("CREATE", patterns...)
 	return qb
 }
 
-func (qb *QueryBuilder) Delete(detchDelete bool, deleteClause RemoveConfig) *QueryBuilder {
+func (qb *QueryBuilder) Delete(detchDelete bool, deleteClause pattern.RemoveConfig) *QueryBuilder {
 	if reflect.ValueOf(deleteClause).IsZero() {
 		qb.addError(errors.New("error empty Delete clause"))
 		return qb
@@ -120,7 +121,7 @@ func (qb *QueryBuilder) Delete(detchDelete bool, deleteClause RemoveConfig) *Que
 	return qb
 }
 
-func (qb *QueryBuilder) Where(whereClauses ...ConditionalConfig) *QueryBuilder {
+func (qb *QueryBuilder) Where(whereClauses ...pattern.ConditionalConfig) *QueryBuilder {
 	if len(whereClauses) == 0 {
 		qb.addError(errors.New("error empty where clause"))
 		return qb
@@ -136,7 +137,7 @@ func (qb *QueryBuilder) Where(whereClauses ...ConditionalConfig) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) Return(returnClauses ...ReturnConfig) *QueryBuilder {
+func (qb *QueryBuilder) Return(returnClauses ...pattern.ReturnConfig) *QueryBuilder {
 	if len(returnClauses) == 0 {
 		qb.addError(errors.New("error empty where clause"))
 		return qb
@@ -154,7 +155,7 @@ func (qb *QueryBuilder) Return(returnClauses ...ReturnConfig) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) Remove(removeClauses RemoveConfig) *QueryBuilder {
+func (qb *QueryBuilder) Remove(removeClauses pattern.RemoveConfig) *QueryBuilder {
 	if reflect.ValueOf(removeClauses).IsZero() {
 		qb.addError(errors.New("error empty where clause"))
 		return qb
@@ -179,7 +180,7 @@ func (qb *QueryBuilder) Union(all bool) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) With(withClauses ...WithConfig) *QueryBuilder {
+func (qb *QueryBuilder) With(withClauses ...pattern.WithConfig) *QueryBuilder {
 	if len(withClauses) == 0 {
 		qb.addError(errors.New("error empty WITH clause"))
 		return qb
@@ -197,7 +198,7 @@ func (qb *QueryBuilder) With(withClauses ...WithConfig) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) OrderBy(orderByClause OrderByConfig) *QueryBuilder {
+func (qb *QueryBuilder) OrderBy(orderByClause pattern.OrderByConfig) *QueryBuilder {
 	if reflect.ValueOf(orderByClause).IsZero() {
 		qb.addError(errors.New("error empty OrderBy clause"))
 		return qb

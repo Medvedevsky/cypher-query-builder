@@ -1,4 +1,4 @@
-package cypher
+package pattern
 
 type QueryPattern struct {
 	PartialRelationship PartialRelationship

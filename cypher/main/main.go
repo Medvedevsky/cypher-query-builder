@@ -2,24 +2,25 @@ package main
 
 import (
 	"fmt"
-	cypher "test/neo4j"
+	cypher "test/neo4j/pkg/builder"
+	"test/neo4j/pkg/pattern"
 )
 
 func main() {
 
-	charlie := cypher.NewNode().
+	charlie := pattern.NewNode().
 		SetVariable("charlie").
 		SetLabel("Person").
-		SetProps(cypher.Prop{Key: "name", Value: "Martin Sheen"})
+		SetProps(pattern.Prop{Key: "name", Value: "Martin Sheen"})
 
-	rob := cypher.NewNode().
+	rob := pattern.NewNode().
 		SetVariable("rob").
 		SetLabel("Person").
-		SetProps(cypher.Prop{Key: "name", Value: "Rob Reiner"})
+		SetProps(pattern.Prop{Key: "name", Value: "Rob Reiner"})
 
-	edge := cypher.NewEdge().
-		SetLabel("OLD FRIENDS").SetPath(cypher.Incoming).
-		Relationship(cypher.FullRelationship{
+	edge := pattern.NewEdge().
+		SetLabel("OLD FRIENDS").SetPath(pattern.Incoming).
+		Relationship(pattern.FullRelationship{
 			LeftNode:  charlie,
 			RightNode: rob,
 		})
@@ -27,14 +28,14 @@ func main() {
 	res, error := cypher.
 		NewQueryBuilder().
 		Match(edge).
-		With(cypher.WithConfig{Name: "next"}).
+		With(pattern.WithConfig{Name: "next"}).
 		CALL(
 			cypher.NewQueryBuilder().
-				With(cypher.WithConfig{Name: "next"}).
-				Match(cypher.NewNode().
+				With(pattern.WithConfig{Name: "next"}).
+				Match(pattern.NewNode().
 					SetVariable("current").
 					SetLabel("ListHead").ToPattern())).
-		Return(cypher.ReturnConfig{Name: "charlie", As: "from"}, cypher.ReturnConfig{Name: "next", As: "to"}).
+		Return(pattern.ReturnConfig{Name: "charlie", As: "from"}, pattern.ReturnConfig{Name: "next", As: "to"}).
 		Execute()
 
 	fmt.Println(res)
