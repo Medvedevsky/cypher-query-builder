@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	cypher "test/neo4j/pkg/builder"
+	"test/neo4j/pkg/cypher"
 	"test/neo4j/pkg/pattern"
 )
 
