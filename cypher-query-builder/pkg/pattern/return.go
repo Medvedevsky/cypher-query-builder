@@ -27,7 +27,6 @@ func (r *ReturnConfig) ToString() (string, error) {
 	if r.As != "" {
 		query += fmt.Sprintf(" AS %s", r.As)
 	}
-	query += ", "
 
 	return query, nil
 }

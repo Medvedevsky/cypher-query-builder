@@ -147,6 +147,7 @@ func (qb *QueryBuilder) Return(returnClauses ...pattern.ReturnConfig) *QueryBuil
 	for _, clause := range returnClauses {
 		res := qb.mapConfigToString(&clause)
 		query += res
+		query += ", "
 	}
 	query = strings.TrimSuffix(query, ", ")
 	query += "\n"
