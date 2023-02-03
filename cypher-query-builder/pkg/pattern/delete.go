@@ -13,15 +13,11 @@ type RemoveConfig struct {
 
 func (r *RemoveConfig) ToString() (string, error) {
 	if r.Name == "" {
-		return "", errors.New("name must be defined")
-	}
-
-	if r.Field == "" && (r.Labels == nil || len(r.Labels) == 0) {
-		return "", errors.New("field or labels has to be defined")
+		return "", errors.New("RemoveConfig - name must be defined")
 	}
 
 	if (r.Labels != nil && len(r.Labels) > 0) && r.Field != "" {
-		return "", errors.New("labels and field can not both be defined")
+		return "", errors.New("RemoveConfig - labels and field cannot both be defined")
 	}
 
 	query := r.Name
