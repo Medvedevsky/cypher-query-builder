@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-// Edge ...
 type Edge struct {
 	variable   string
 	label      Label
@@ -14,7 +13,6 @@ type Edge struct {
 	condition  Condition
 }
 
-// NewEdge ...
 func NewEdge() *Edge {
 	return &Edge{
 		variable:   "",
@@ -52,7 +50,6 @@ func (e *Edge) SetPath(path Path) *Edge {
 	return e
 }
 
-// Relationship ...
 func (e Edge) Relationship(f FullRelationship) QueryPattern {
 	// f.Edge = e
 	return QueryPattern{

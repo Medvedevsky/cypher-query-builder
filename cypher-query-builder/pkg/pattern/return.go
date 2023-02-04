@@ -13,7 +13,7 @@ type ReturnConfig struct {
 
 func (r *ReturnConfig) ToString() (string, error) {
 	if r.Name == "" {
-		return "", errors.New("error Return clause: name must be defined")
+		return "", errors.New("ReturnConfig - error Return clause: name must be defined")
 	}
 
 	query := ""

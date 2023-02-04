@@ -19,7 +19,6 @@ func NewQueryBuilder() *QueryBuilder {
 	return &QueryBuilder{}
 }
 
-// подобие полиморфизма подтипов
 func (qb *QueryBuilder) mapConfigToString(clauses ...pattern.QueryConfig) string {
 	query := ""
 
@@ -101,13 +100,13 @@ func (qb *QueryBuilder) Create(patterns ...pattern.QueryPattern) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) Delete(detchDelete bool, deleteClause pattern.RemoveConfig) *QueryBuilder {
+func (qb *QueryBuilder) Delete(detachDelete bool, deleteClause pattern.RemoveConfig) *QueryBuilder {
 	if reflect.ValueOf(deleteClause).IsZero() {
 		qb.addError(errors.New("error empty Delete clause"))
 		return qb
 	}
 
-	if detchDelete {
+	if detachDelete {
 		qb.query += "DETACH DELETE "
 	} else {
 		qb.query += "DELETE "
@@ -123,7 +122,7 @@ func (qb *QueryBuilder) Delete(detchDelete bool, deleteClause pattern.RemoveConf
 
 func (qb *QueryBuilder) Where(whereClauses ...pattern.ConditionalConfig) *QueryBuilder {
 	if len(whereClauses) == 0 {
-		qb.addError(errors.New("error empty where clause"))
+		qb.addError(errors.New("error empty Where clause"))
 		return qb
 	}
 
@@ -139,7 +138,7 @@ func (qb *QueryBuilder) Where(whereClauses ...pattern.ConditionalConfig) *QueryB
 
 func (qb *QueryBuilder) Return(returnClauses ...pattern.ReturnConfig) *QueryBuilder {
 	if len(returnClauses) == 0 {
-		qb.addError(errors.New("error empty where clause"))
+		qb.addError(errors.New("error empty Return clause"))
 		return qb
 	}
 

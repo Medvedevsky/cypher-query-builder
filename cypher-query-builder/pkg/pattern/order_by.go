@@ -13,7 +13,7 @@ type OrderByConfig struct {
 
 func (o *OrderByConfig) ToString() (string, error) {
 	if o.Name == "" || o.Member == "" {
-		return "", errors.New("name and member have to be defined")
+		return "", errors.New("OrderByConfig - name and member have to be defined")
 	}
 
 	if o.Desc {

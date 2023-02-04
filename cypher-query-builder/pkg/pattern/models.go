@@ -58,7 +58,6 @@ const (
 	Desc OrderByOperator = "DESC"
 )
 
-// Path ...
 type Path string
 
 const (
