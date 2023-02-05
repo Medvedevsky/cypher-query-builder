@@ -1,6 +1,7 @@
 package test
 
 import (
+	"test/neo4j/pkg/cypher"
 	"test/neo4j/pkg/pattern"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 func TestOrderByConfig_ToString(t *testing.T) {
 	req := require.New(t)
 	var err error
-	var cypher string
+	var res string
 
 	//name not defined
 	t1 := pattern.OrderByConfig{
@@ -36,9 +37,9 @@ func TestOrderByConfig_ToString(t *testing.T) {
 		Name:   "n",
 		Member: "m",
 	}
-	cypher, err = t4.ToString()
+	res, err = t4.ToString()
 	req.Nil(err)
-	req.EqualValues("n.m", cypher)
+	req.EqualValues("n.m", res)
 
 	//pattern
 	t5 := pattern.OrderByConfig{
@@ -46,7 +47,16 @@ func TestOrderByConfig_ToString(t *testing.T) {
 		Member: "m",
 		Desc:   true,
 	}
-	cypher, err = t5.ToString()
+	res, err = t5.ToString()
 	req.Nil(err)
-	req.EqualValues("n.m DESC", cypher)
+	req.EqualValues("n.m DESC", res)
+
+	//clause ORDER BY
+	t6, err := cypher.NewQueryBuilder().OrderBy(pattern.OrderByConfig{
+		Name:   "n",
+		Member: "m",
+		Desc:   true,
+	}).Execute()
+	req.Nil(err)
+	req.EqualValues("ORDER BY n.m DESC", t6)
 }
