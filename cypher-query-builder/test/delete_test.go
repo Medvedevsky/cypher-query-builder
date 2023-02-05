@@ -1,6 +1,7 @@
 package test
 
 import (
+	"test/neo4j/pkg/cypher"
 	"test/neo4j/pkg/pattern"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 func TestRemoveConfig_ToString(t *testing.T) {
 	req := require.New(t)
 	var err error
-	var cypher string
+	var res string
 
 	//labels and field can not both be defined
 	t1 := pattern.RemoveConfig{
@@ -38,25 +39,40 @@ func TestRemoveConfig_ToString(t *testing.T) {
 	t4 := pattern.RemoveConfig{
 		Name: "n",
 	}
-	cypher, err = t4.ToString()
+	res, err = t4.ToString()
 	req.Nil(err)
-	req.EqualValues("n", cypher)
+	req.EqualValues("n", res)
 
 	//pattern with name and prop
 	t5 := pattern.RemoveConfig{
 		Name:  "n",
 		Field: "prop",
 	}
-	cypher, err = t5.ToString()
+	res, err = t5.ToString()
 	req.Nil(err)
-	req.EqualValues("n.prop", cypher)
+	req.EqualValues("n.prop", res)
 
 	//pattern with name and label
 	t6 := pattern.RemoveConfig{
 		Name:   "n",
 		Labels: []string{"TEST"},
 	}
-	cypher, err = t6.ToString()
+	res, err = t6.ToString()
 	req.Nil(err)
-	req.EqualValues("n:TEST", cypher)
+	req.EqualValues("n:TEST", res)
+
+	// clause DELETE
+	t7, err := cypher.NewQueryBuilder().Delete(false, pattern.RemoveConfig{Name: "n"}).Execute()
+	req.Nil(err)
+	req.EqualValues("DELETE n", t7)
+
+	// clause DETACH DELETE
+	t8, err := cypher.NewQueryBuilder().Delete(true, pattern.RemoveConfig{Name: "n"}).Execute()
+	req.Nil(err)
+	req.EqualValues("DETACH DELETE n", t8)
+
+	// clause REMOVE
+	t9, err := cypher.NewQueryBuilder().Remove(pattern.RemoveConfig{Name: "n"}).Execute()
+	req.Nil(err)
+	req.EqualValues("REMOVE n", t9)
 }
