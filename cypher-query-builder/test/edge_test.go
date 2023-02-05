@@ -47,8 +47,8 @@ func TestEdge_ToString(t *testing.T) {
 		SetProps(pattern.Prop{Key: "t", Value: 15}).
 		SetPath(pattern.Outgoing).
 		PartialRelationship(pattern.PartialRelationship{
-			LeftDirection: true,
-			Node:          pattern.NewNode().SetVariable("c"),
+			RightDirection: true,
+			Node:           pattern.NewNode().SetVariable("c"),
 		})
 
 	cypher, err = t2.Edge.PartialRelationshipBuild(t2.PartialRelationship)
