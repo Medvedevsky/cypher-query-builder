@@ -5,22 +5,22 @@ Cypher Query Builder for Neo4j
 ## Example usage
 
 ``` go
-	pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
+pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
 
-	callCypher, err := cypher.NewQueryBuilder().
-		Call(cypher.NewQueryBuilder().
-			Match(pNode).
-			Return(pattern.ReturnConfig{Name: "p"}).
-			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
-			Limit(1).
-		Union(false).
-			Match(pNode).
-			Return(pattern.ReturnConfig{Name: "p"}).
-			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
-			Limit(1)).
-		Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
-		OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
-		Execute()
+callCypher, err := cypher.NewQueryBuilder().
+	Call(cypher.NewQueryBuilder().
+		Match(pNode).
+		Return(pattern.ReturnConfig{Name: "p"}).
+		OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
+		Limit(1).
+	Union(false).
+		Match(pNode).
+		Return(pattern.ReturnConfig{Name: "p"}).
+		OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
+		Limit(1)).
+	Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
+	OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
+	Execute()
 ```
 
 ```
