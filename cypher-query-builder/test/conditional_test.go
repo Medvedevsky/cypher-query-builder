@@ -1,6 +1,7 @@
 package test
 
 import (
+	"test/neo4j/pkg/cypher"
 	"test/neo4j/pkg/pattern"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 func TestConditionalConfig_ToString(t *testing.T) {
 	req := require.New(t)
 	var err error
-	var cypher string
+	var res string
 
 	//must define a function or name
 	t1 := pattern.ConditionalConfig{
@@ -53,18 +54,18 @@ func TestConditionalConfig_ToString(t *testing.T) {
 		Name:  "n",
 		Field: "m",
 	}
-	cypher, err = t5.ToString()
+	res, err = t5.ToString()
 	req.Nil(err)
-	req.EqualValues("n.m", cypher)
+	req.EqualValues("n.m", res)
 
 	//pattern
 	t6 := pattern.ConditionalConfig{
 		Name:  "n",
 		Label: "L",
 	}
-	cypher, err = t6.ToString()
+	res, err = t6.ToString()
 	req.Nil(err)
-	req.EqualValues("n:L", cypher)
+	req.EqualValues("n:L", res)
 
 	//pattern
 	t7 := pattern.ConditionalConfig{
@@ -73,9 +74,9 @@ func TestConditionalConfig_ToString(t *testing.T) {
 		ConditionOperator: pattern.EqualToOperator,
 		Check:             21,
 	}
-	cypher, err = t7.ToString()
+	res, err = t7.ToString()
 	req.Nil(err)
-	req.EqualValues("n.l = 21", cypher)
+	req.EqualValues("n.l = 21", res)
 
 	//pattern
 	t8 := pattern.ConditionalConfig{
@@ -83,7 +84,24 @@ func TestConditionalConfig_ToString(t *testing.T) {
 		Field:             "l",
 		ConditionFunction: "tfunc",
 	}
-	cypher, err = t8.ToString()
+	res, err = t8.ToString()
 	req.Nil(err)
-	req.EqualValues("tfunc(n.l)", cypher)
+	req.EqualValues("tfunc(n.l)", res)
+
+	// where condition
+	t9, err := cypher.NewQueryBuilder().
+		Where(pattern.ConditionalConfig{
+			Name:              "p",
+			Field:             "age",
+			ConditionOperator: pattern.EqualToOperator,
+			Check:             12,
+			Condition:         pattern.AND,
+		}, pattern.ConditionalConfig{
+			Name:              "p",
+			Field:             "height",
+			ConditionOperator: pattern.EqualToOperator,
+			Check:             150,
+		}).Execute()
+	req.NoError(err)
+	req.EqualValues("WHERE p.age = 12 AND p.height = 150", t9)
 }
