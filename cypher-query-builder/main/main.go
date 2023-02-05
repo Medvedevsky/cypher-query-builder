@@ -26,20 +26,49 @@ func main() {
 			RightNode: rob,
 		})
 
-	res, error := cypher.
+	res, err := cypher.
 		NewQueryBuilder().
 		Match(edge).
 		With(pattern.WithConfig{Name: "next"}).
-		CALL(
+		Call(
 			cypher.NewQueryBuilder().
 				With(pattern.WithConfig{Name: "next"}).
 				Match(pattern.NewNode().
 					SetVariable("current").
-					SetLabel("ListHead").ToPattern())).
+					SetLabel("ListHead").AsPattern())).
+		Where(pattern.ConditionalConfig{
+			Name:              "a",
+			Field:             "label",
+			ConditionFunction: "tfunc"}).
 		Return(pattern.ReturnConfig{Name: "charlie", As: "from"}, pattern.ReturnConfig{Name: "next", As: "to"}).
-		Delete(true, pattern.RemoveConfig{Name: "a", Labels: []string{"TEST"}}).
 		Execute()
 
 	fmt.Println(res)
-	fmt.Println(error)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println()
+
+	pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
+
+	callCypher, err := cypher.NewQueryBuilder().
+		Call(cypher.NewQueryBuilder().
+			Match(pNode).
+			Return(pattern.ReturnConfig{Name: "p"}).
+			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
+			Limit(1).
+			Union(false).
+			Match(pNode).
+			Return(pattern.ReturnConfig{Name: "p"}).
+			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
+			Limit(1)).
+		Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
+		OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
+		Execute()
+
+	fmt.Println(callCypher)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }
