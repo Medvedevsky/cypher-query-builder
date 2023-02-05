@@ -1,6 +1,7 @@
 package test
 
 import (
+	"test/neo4j/pkg/cypher"
 	"test/neo4j/pkg/pattern"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 func TestWithConfig_ToString(t *testing.T) {
 	req := require.New(t)
 	var err error
-	var cypher string
+	var res string
 
 	//must define a function or name
 	t1 := pattern.WithConfig{}
@@ -22,9 +23,9 @@ func TestWithConfig_ToString(t *testing.T) {
 		Name:  "n",
 		Field: "m",
 	}
-	cypher, err = t4.ToString()
+	res, err = t4.ToString()
 	req.Nil(err)
-	req.EqualValues("n.m", cypher)
+	req.EqualValues("n.m", res)
 
 	//pattern
 	t5 := pattern.WithConfig{
@@ -32,7 +33,16 @@ func TestWithConfig_ToString(t *testing.T) {
 		Field: "m",
 		As:    "abc",
 	}
-	cypher, err = t5.ToString()
+	res, err = t5.ToString()
 	req.Nil(err)
-	req.EqualValues("n.m AS abc", cypher)
+	req.EqualValues("n.m AS abc", res)
+
+	// WITH clause
+	t6, err := cypher.NewQueryBuilder().With(pattern.WithConfig{
+		Name:  "n",
+		Field: "m",
+		As:    "abc",
+	}).Execute()
+	req.Nil(err)
+	req.EqualValues("WITH n.m AS abc", t6)
 }
