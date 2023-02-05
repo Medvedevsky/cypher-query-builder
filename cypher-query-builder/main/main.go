@@ -8,7 +8,33 @@ import (
 )
 
 func main() {
+	// example usage №1
+	pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
 
+	callCypher, err := cypher.NewQueryBuilder().
+		Call(cypher.NewQueryBuilder().
+			Match(pNode).
+			Return(pattern.ReturnConfig{Name: "p"}).
+			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
+			Limit(1).
+			Union(false).
+			Match(pNode).
+			Return(pattern.ReturnConfig{Name: "p"}).
+			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
+			Limit(1)).
+		Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
+		OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
+		Execute()
+
+	fmt.Println(callCypher)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println()
+
+	// example usage №2
 	charlie := pattern.NewNode().
 		SetVariable("charlie").
 		SetLabel("Person").
@@ -38,9 +64,10 @@ func main() {
 					SetVariable("current").
 					SetLabel("ListHead").AsPattern())).
 		Where(pattern.ConditionalConfig{
-			Name:              "a",
-			Field:             "label",
-			ConditionFunction: "tfunc"}).
+			Name:              "rob",
+			Field:             "age",
+			ConditionOperator: pattern.EqualToOperator,
+			Check:             21}).
 		Return(pattern.ReturnConfig{Name: "charlie", As: "from"}, pattern.ReturnConfig{Name: "next", As: "to"}).
 		Execute()
 
@@ -48,31 +75,4 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println()
-
-	pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
-
-	callCypher, err := cypher.NewQueryBuilder().
-		Call(cypher.NewQueryBuilder().
-			Match(pNode).
-			Return(pattern.ReturnConfig{Name: "p"}).
-			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
-			Limit(1).
-			Union(false).
-			Match(pNode).
-			Return(pattern.ReturnConfig{Name: "p"}).
-			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
-			Limit(1)).
-		Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
-		OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
-		Execute()
-
-	fmt.Println(callCypher)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// github.com/Medvedevsky/cypher-query-builder
-	// go get github.com/stretchr/testify
 }
