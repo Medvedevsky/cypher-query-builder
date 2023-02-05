@@ -8,7 +8,9 @@ type QueryPattern struct {
 }
 
 type PartialRelationship struct {
-	LeftDirection  bool
+	// the node will be on the left
+	LeftDirection bool
+	// the node will be on the rigth
 	RightDirection bool
 	Node           *Node
 }
@@ -45,7 +47,6 @@ const (
 	EqualToOperator              BooleanOperator = "="
 	InOperator                   BooleanOperator = "IN"
 	IsOperator                   BooleanOperator = "IS"
-	RegexEqualToOperator         BooleanOperator = "=~"
 	StartsWithOperator           BooleanOperator = "STARTS WITH"
 	EndsWithOperator             BooleanOperator = "ENDS WITH"
 	ContainsOperator             BooleanOperator = "CONTAINS"

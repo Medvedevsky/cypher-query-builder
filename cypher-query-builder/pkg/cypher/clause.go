@@ -35,7 +35,6 @@ func (qb *QueryBuilder) mapConfigToString(clauses ...pattern.QueryConfig) string
 }
 
 func (qb *QueryBuilder) queryPatternMap(pattern pattern.QueryPattern) string {
-	query := ""
 
 	if reflect.ValueOf(pattern).IsZero() {
 		qb.addError(errors.New("error match QueryPattern null"))
@@ -43,21 +42,33 @@ func (qb *QueryBuilder) queryPatternMap(pattern pattern.QueryPattern) string {
 	}
 
 	if !reflect.ValueOf(pattern.OnlyNode).IsZero() {
-		query += pattern.OnlyNode.Node.ToCypher()
+		query, err := pattern.OnlyNode.Node.ToCypher()
+
+		if err != nil {
+			qb.addError(err)
+		}
 
 		return query
 	}
 
 	if !reflect.ValueOf(pattern.PartialRelationship).IsZero() {
 		p := pattern.PartialRelationship
+		query, err := pattern.Edge.PartialRelationshipBuild(p)
 
-		query += pattern.Edge.PartialRelationshipBuild(p)
+		if err != nil {
+			qb.addError(err)
+		}
+
 		return query
 	}
 
 	if !reflect.ValueOf(pattern.FullRelationship).IsZero() {
 		f := pattern.FullRelationship
-		query += pattern.Edge.RelationshipBuild(f)
+		query, err := pattern.Edge.RelationshipBuild(f)
+
+		if err != nil {
+			qb.addError(err)
+		}
 
 		return query
 	}
@@ -65,13 +76,13 @@ func (qb *QueryBuilder) queryPatternMap(pattern pattern.QueryPattern) string {
 	return ""
 }
 
-func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...pattern.QueryPattern) string {
+func (qb *QueryBuilder) queryPatternUsage(clause string, patterns ...pattern.QueryPattern) string {
 	if len(patterns) == 0 {
-		error := fmt.Sprintf("error %s patterns null", clauses)
+		error := fmt.Sprintf("error %s patterns null", clause)
 		qb.addError(errors.New(error))
 		return ""
 	}
-	query := clauses + " "
+	query := clause + " "
 	for _, pattern := range patterns {
 		query += qb.queryPatternMap(pattern)
 	}
@@ -80,26 +91,31 @@ func (qb *QueryBuilder) queryPatternUsage(clauses string, patterns ...pattern.Qu
 	return query
 }
 
+// MATCH clause
 func (qb *QueryBuilder) Match(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("MATCH", patterns...)
 	return qb
 }
 
+// OPRIONAL MATCH clause
 func (qb *QueryBuilder) OptionlMath(patterns ...pattern.QueryPattern) *QueryBuilder {
-	qb.query += qb.queryPatternUsage("OPTIONAL MATH", patterns...)
+	qb.query += qb.queryPatternUsage("OPTIONAL MATCH", patterns...)
 	return qb
 }
 
+// MERGE clause
 func (qb *QueryBuilder) Merge(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("MERGE", patterns...)
 	return qb
 }
 
+// CREATE clause
 func (qb *QueryBuilder) Create(patterns ...pattern.QueryPattern) *QueryBuilder {
 	qb.query += qb.queryPatternUsage("CREATE", patterns...)
 	return qb
 }
 
+// DELETE clause
 func (qb *QueryBuilder) Delete(detachDelete bool, deleteClause pattern.RemoveConfig) *QueryBuilder {
 	if reflect.ValueOf(deleteClause).IsZero() {
 		qb.addError(errors.New("error empty Delete clause"))
@@ -120,6 +136,7 @@ func (qb *QueryBuilder) Delete(detachDelete bool, deleteClause pattern.RemoveCon
 	return qb
 }
 
+// WHERE clause
 func (qb *QueryBuilder) Where(whereClauses ...pattern.ConditionalConfig) *QueryBuilder {
 	if len(whereClauses) == 0 {
 		qb.addError(errors.New("error empty Where clause"))
@@ -136,13 +153,14 @@ func (qb *QueryBuilder) Where(whereClauses ...pattern.ConditionalConfig) *QueryB
 	return qb
 }
 
+// RETURN clause
 func (qb *QueryBuilder) Return(returnClauses ...pattern.ReturnConfig) *QueryBuilder {
 	if len(returnClauses) == 0 {
 		qb.addError(errors.New("error empty Return clause"))
 		return qb
 	}
 
-	query := "RETRUN "
+	query := "RETURN "
 	for _, clause := range returnClauses {
 		res := qb.mapConfigToString(&clause)
 		query += res
@@ -155,6 +173,7 @@ func (qb *QueryBuilder) Return(returnClauses ...pattern.ReturnConfig) *QueryBuil
 	return qb
 }
 
+// REMOVE clause
 func (qb *QueryBuilder) Remove(removeClauses pattern.RemoveConfig) *QueryBuilder {
 	if reflect.ValueOf(removeClauses).IsZero() {
 		qb.addError(errors.New("error empty where clause"))
@@ -162,7 +181,7 @@ func (qb *QueryBuilder) Remove(removeClauses pattern.RemoveConfig) *QueryBuilder
 	}
 
 	query := "REMOVE "
-	qb.mapConfigToString(&removeClauses)
+	query += qb.mapConfigToString(&removeClauses)
 	query = strings.TrimSuffix(query, ", ")
 	query += "\n"
 	qb.query += query
@@ -180,6 +199,7 @@ func (qb *QueryBuilder) Union(all bool) *QueryBuilder {
 	return qb
 }
 
+// WITH clause
 func (qb *QueryBuilder) With(withClauses ...pattern.WithConfig) *QueryBuilder {
 	if len(withClauses) == 0 {
 		qb.addError(errors.New("error empty WITH clause"))
@@ -199,6 +219,7 @@ func (qb *QueryBuilder) With(withClauses ...pattern.WithConfig) *QueryBuilder {
 	return qb
 }
 
+// ORDER BY clause
 func (qb *QueryBuilder) OrderBy(orderByClause pattern.OrderByConfig) *QueryBuilder {
 	if reflect.ValueOf(orderByClause).IsZero() {
 		qb.addError(errors.New("error empty OrderBy clause"))
@@ -213,14 +234,15 @@ func (qb *QueryBuilder) OrderBy(orderByClause pattern.OrderByConfig) *QueryBuild
 	return qb
 }
 
+// LIMIT clause
 func (qb *QueryBuilder) Limit(limit int) *QueryBuilder {
 	qb.query += "LIMIT " + strconv.Itoa(limit) + "\n"
 
 	return qb
 }
 
-// CALL {subquery}
-func (qb *QueryBuilder) CALL(nqb *QueryBuilder) *QueryBuilder {
+// CALL {subquery} clause
+func (qb *QueryBuilder) Call(nqb *QueryBuilder) *QueryBuilder {
 	res := "CALL {\n"
 	subquery, error := nqb.Execute()
 	if error != nil {
@@ -235,19 +257,24 @@ func (qb *QueryBuilder) CALL(nqb *QueryBuilder) *QueryBuilder {
 
 		if char == "\n" {
 			if i != len(subquery)-1 {
-				buffer.WriteRune('\t')
+				// buffer.WriteRune('\t')
+				// таб слишком большой, по этому добавляю два пробела
+				buffer.WriteRune(' ')
+				buffer.WriteRune(' ')
 			}
 		}
 	}
 
 	subquery = buffer.String()
-	res += "\t" + subquery + "}\n"
+	res += "  " + subquery + "\n}\n"
 	qb.query += res
 
 	return qb
 }
 
+// return cypher query
 func (qb *QueryBuilder) Execute() (string, error) {
+	qb.query = strings.TrimSuffix(qb.query, "\n")
 	return qb.query, qb.errorBuild()
 }
 

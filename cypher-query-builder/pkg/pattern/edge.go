@@ -1,6 +1,7 @@
 package pattern
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -51,7 +52,6 @@ func (e *Edge) SetPath(path Path) *Edge {
 }
 
 func (e Edge) Relationship(f FullRelationship) QueryPattern {
-	// f.Edge = e
 	return QueryPattern{
 		FullRelationship: f,
 		Edge:             e,
@@ -59,39 +59,50 @@ func (e Edge) Relationship(f FullRelationship) QueryPattern {
 }
 
 func (e Edge) PartialRelationship(p PartialRelationship) QueryPattern {
-	// p.Edge = e
 	return QueryPattern{
 		PartialRelationship: p,
 		Edge:                e,
 	}
 }
 
-func (e Edge) PartialRelationshipBuild(p PartialRelationship) string {
-	//switch
+func (e Edge) PartialRelationshipBuild(p PartialRelationship) (string, error) {
+
 	if p.LeftDirection {
-		return fmt.Sprintf("%v%v", p.Node.ToCypher(), e.ToCypher())
+		leftNode, err := p.Node.ToCypher()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%v%v", leftNode, e.ToCypher()), nil
 	}
 
 	if p.RightDirection {
-		return fmt.Sprintf("%v%v", e.ToCypher(), p.Node.ToCypher())
+		rightNode, err := p.Node.ToCypher()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%v%v", e.ToCypher(), rightNode), nil
 	}
 
-	fmt.Println("error not set type direction")
-	return ""
+	return "", errors.New("PartialRelationshipBuild - not set type direction")
 }
 
-func (e Edge) RelationshipBuild(f FullRelationship) string {
+func (e Edge) RelationshipBuild(f FullRelationship) (string, error) {
 
 	if f.LeftNode == nil || f.RightNode == nil {
-		//error
-		fmt.Println("error RelationshipBuild not have nodes")
-		return ""
+		return "", errors.New("RelationshipBuild - not have nodes")
 	}
 
-	leftNode := f.LeftNode
-	rightNode := f.RightNode
+	leftNode, err := f.LeftNode.ToCypher()
+	if err != nil {
+		return "", err
+	}
 
-	return fmt.Sprintf("%v%v%v", leftNode.ToCypher(), e.ToCypher(), rightNode.ToCypher())
+	rightNode, err := f.RightNode.ToCypher()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%v%v%v", leftNode, e.ToCypher(), rightNode), nil
 }
 
 func (e Edge) RelationshipMulti(edges ...string) string {
@@ -114,11 +125,11 @@ func (e Edge) ToCypher() string {
 		if e.label.Condition != "" {
 			condition = fmt.Sprintf("%v", e.label.Condition)
 		}
-		edge += fmt.Sprintf(":%v", strings.Join(e.label.Names, condition)) + " "
+		edge += fmt.Sprintf(":%v", strings.Join(e.label.Names, condition))
 	}
 
 	if len(e.properties) > 0 {
-		edge += e.properties.ToCypher()
+		edge += fmt.Sprintf(" %s", e.properties.ToCypher())
 	}
 
 	edge = fmt.Sprintf("-[%v]-", edge)

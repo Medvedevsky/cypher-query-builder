@@ -1,6 +1,7 @@
 package pattern
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -42,11 +43,16 @@ func (n *Node) SetLabels(condition Condition, labels ...string) *Node {
 	return n
 }
 
-func (n Node) ToPattern() QueryPattern {
+func (n Node) AsPattern() QueryPattern {
 	return QueryPattern{OnlyNode: OnlyNode{Node: &n}}
 }
 
-func (n Node) ToCypher() string {
+func (n Node) ToCypher() (string, error) {
+
+	if n.variable == "" && len(n.label.Names) > 0 {
+		return "", errors.New("Node must have a variable with at least one label")
+	}
+
 	node := "("
 
 	if n.variable != "" {
@@ -58,12 +64,13 @@ func (n Node) ToCypher() string {
 		if n.label.Condition != "" {
 			condition = fmt.Sprintf("%v", n.label.Condition)
 		}
-		node += fmt.Sprintf(":%v", strings.Join(n.label.Names, condition)) + " "
+		node += fmt.Sprintf(":%v", strings.Join(n.label.Names, condition))
 	}
 
 	if len(n.properties) > 0 {
-		node += n.properties.ToCypher()
+		node += fmt.Sprintf(" %s", n.properties.ToCypher())
 	}
+	node += ")"
 
-	return node + ")"
+	return node, nil
 }
