@@ -7,7 +7,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"test/neo4j/pkg/pattern"
+
+	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
 )
 
 type QueryBuilder struct {

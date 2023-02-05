@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"test/neo4j/pkg/cypher"
-	"test/neo4j/pkg/pattern"
+
+	"github.com/Medvedevsky/cypher-query-builder/pkg/cypher"
+	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
 )
 
 func main() {
@@ -71,4 +72,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// github.com/Medvedevsky/cypher-query-builder
+	// go get github.com/stretchr/testify
 }

@@ -1,9 +1,10 @@
 package test
 
 import (
-	"test/neo4j/pkg/cypher"
-	"test/neo4j/pkg/pattern"
 	"testing"
+
+	"github.com/Medvedevsky/cypher-query-builder/pkg/cypher"
+	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
 
 	"github.com/stretchr/testify/require"
 )
