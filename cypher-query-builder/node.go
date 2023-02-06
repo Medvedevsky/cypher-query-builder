@@ -3,7 +3,6 @@ package cypher
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 type Node struct {
@@ -59,13 +58,7 @@ func (n Node) ToCypher() (string, error) {
 		node += n.variable
 	}
 
-	if len(n.label.Names) > 0 {
-		condition := ""
-		if n.label.Condition != "" {
-			condition = fmt.Sprintf("%v", n.label.Condition)
-		}
-		node += fmt.Sprintf(":%v", strings.Join(n.label.Names, condition))
-	}
+	node += n.label.ToCypher()
 
 	if len(n.properties) > 0 {
 		node += fmt.Sprintf(" %s", n.properties.ToCypher())

@@ -29,9 +29,11 @@ type Condition string
 const (
 	// And symbol condition "&"
 	And Condition = "&"
-
 	// Or symbol condition "|"
 	Or Condition = "|"
+	// ":" symbol condition
+	Сolon Condition = ":"
+	Empty Condition = ""
 
 	AND Condition = "AND"
 	OR  Condition = "OR"

@@ -3,7 +3,6 @@ package cypher
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 type Edge struct {
@@ -120,13 +119,15 @@ func (e Edge) ToCypher() string {
 		edge += e.variable
 	}
 
-	if len(e.label.Names) > 0 {
-		condition := ""
-		if e.label.Condition != "" {
-			condition = fmt.Sprintf("%v", e.label.Condition)
-		}
-		edge += fmt.Sprintf(":%v", strings.Join(e.label.Names, condition))
-	}
+	// if len(e.label.Names) > 0 {
+	// 	condition := ""
+	// 	if e.label.Condition != "" {
+	// 		condition = fmt.Sprintf("%v", e.label.Condition)
+	// 	}
+	// 	edge += fmt.Sprintf(":%v", strings.Join(e.label.Names, condition))
+	// }
+
+	edge += e.label.ToCypher()
 
 	if len(e.properties) > 0 {
 		edge += fmt.Sprintf(" %s", e.properties.ToCypher())
