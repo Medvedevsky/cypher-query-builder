@@ -1,10 +1,7 @@
-package test
+package cypher
 
 import (
 	"testing"
-
-	"github.com/Medvedevsky/cypher-query-builder/pkg/cypher"
-	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
 
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +12,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	var res string
 
 	//must define a function or name
-	t1 := pattern.ConditionalConfig{
+	t1 := ConditionalConfig{
 		Field:             "a",
 		Label:             "b",
 		ConditionFunction: "c",
@@ -24,7 +21,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.NotNil(err)
 
 	//only one of field or label can be set
-	t2 := pattern.ConditionalConfig{
+	t2 := ConditionalConfig{
 		Name:  "a",
 		Field: "b",
 		Label: "c",
@@ -33,7 +30,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.NotNil(err)
 
 	//condition operator can not be empty with var check
-	t3 := pattern.ConditionalConfig{
+	t3 := ConditionalConfig{
 		Name:  "a",
 		Field: "b",
 		Check: 2,
@@ -42,7 +39,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.NotNil(err)
 
 	//only one of label or condition function can be set
-	t4 := pattern.ConditionalConfig{
+	t4 := ConditionalConfig{
 		Name:              "a",
 		Label:             "b",
 		ConditionFunction: "tfunc",
@@ -51,7 +48,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.NotNil(err)
 
 	//pattern
-	t5 := pattern.ConditionalConfig{
+	t5 := ConditionalConfig{
 		Name:  "n",
 		Field: "m",
 	}
@@ -60,7 +57,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.EqualValues("n.m", res)
 
 	//pattern
-	t6 := pattern.ConditionalConfig{
+	t6 := ConditionalConfig{
 		Name:  "n",
 		Label: "L",
 	}
@@ -69,10 +66,10 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.EqualValues("n:L", res)
 
 	//pattern
-	t7 := pattern.ConditionalConfig{
+	t7 := ConditionalConfig{
 		Name:              "n",
 		Field:             "l",
-		ConditionOperator: pattern.EqualToOperator,
+		ConditionOperator: EqualToOperator,
 		Check:             21,
 	}
 	res, err = t7.ToString()
@@ -80,7 +77,7 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.EqualValues("n.l = 21", res)
 
 	//pattern
-	t8 := pattern.ConditionalConfig{
+	t8 := ConditionalConfig{
 		Name:              "n",
 		Field:             "l",
 		ConditionFunction: "tfunc",
@@ -90,17 +87,17 @@ func TestConditionalConfig_ToString(t *testing.T) {
 	req.EqualValues("tfunc(n.l)", res)
 
 	// where condition
-	t9, err := cypher.NewQueryBuilder().
-		Where(pattern.ConditionalConfig{
+	t9, err := NewQueryBuilder().
+		Where(ConditionalConfig{
 			Name:              "p",
 			Field:             "age",
-			ConditionOperator: pattern.EqualToOperator,
+			ConditionOperator: EqualToOperator,
 			Check:             12,
-			Condition:         pattern.AND,
-		}, pattern.ConditionalConfig{
+			Condition:         AND,
+		}, ConditionalConfig{
 			Name:              "p",
 			Field:             "height",
-			ConditionOperator: pattern.EqualToOperator,
+			ConditionOperator: EqualToOperator,
 			Check:             150,
 		}).Execute()
 	req.NoError(err)

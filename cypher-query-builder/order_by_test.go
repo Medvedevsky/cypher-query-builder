@@ -1,10 +1,7 @@
-package test
+package cypher
 
 import (
 	"testing"
-
-	"github.com/Medvedevsky/cypher-query-builder/pkg/cypher"
-	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
 
 	"github.com/stretchr/testify/require"
 )
@@ -15,26 +12,26 @@ func TestOrderByConfig_ToString(t *testing.T) {
 	var res string
 
 	//name not defined
-	t1 := pattern.OrderByConfig{
+	t1 := OrderByConfig{
 		Member: "abc",
 	}
 	_, err = t1.ToString()
 	req.NotNil(err)
 
 	//member not defined
-	t2 := pattern.OrderByConfig{
+	t2 := OrderByConfig{
 		Name: "abc",
 	}
 	_, err = t2.ToString()
 	req.NotNil(err)
 
 	//both member and name not defined
-	t3 := pattern.OrderByConfig{}
+	t3 := OrderByConfig{}
 	_, err = t3.ToString()
 	req.NotNil(err)
 
 	//pattern
-	t4 := pattern.OrderByConfig{
+	t4 := OrderByConfig{
 		Name:   "n",
 		Member: "m",
 	}
@@ -43,7 +40,7 @@ func TestOrderByConfig_ToString(t *testing.T) {
 	req.EqualValues("n.m", res)
 
 	//pattern
-	t5 := pattern.OrderByConfig{
+	t5 := OrderByConfig{
 		Name:   "n",
 		Member: "m",
 		Desc:   true,
@@ -53,7 +50,7 @@ func TestOrderByConfig_ToString(t *testing.T) {
 	req.EqualValues("n.m DESC", res)
 
 	//clause ORDER BY
-	t6, err := cypher.NewQueryBuilder().OrderBy(pattern.OrderByConfig{
+	t6, err := NewQueryBuilder().OrderBy(OrderByConfig{
 		Name:   "n",
 		Member: "m",
 		Desc:   true,

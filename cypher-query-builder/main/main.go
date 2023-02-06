@@ -3,27 +3,26 @@ package main
 import (
 	"fmt"
 
-	"github.com/Medvedevsky/cypher-query-builder/pkg/cypher"
-	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
+	"github.com/Medvedevsky/cypher-query-builder"
 )
 
 func main() {
 	// example usage №1
-	pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
+	pNode := cypher.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
 
 	callCypher, err := cypher.NewQueryBuilder().
 		Call(cypher.NewQueryBuilder().
 			Match(pNode).
-			Return(pattern.ReturnConfig{Name: "p"}).
-			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
+			Return(cypher.ReturnConfig{Name: "p"}).
+			OrderBy(cypher.OrderByConfig{Name: "p", Member: "age", Asc: true}).
 			Limit(1).
 			Union(false).
 			Match(pNode).
-			Return(pattern.ReturnConfig{Name: "p"}).
-			OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
+			Return(cypher.ReturnConfig{Name: "p"}).
+			OrderBy(cypher.OrderByConfig{Name: "p", Member: "age", Desc: true}).
 			Limit(1)).
-		Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
-		OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
+		Return(cypher.ReturnConfig{Name: "p", Type: "name"}, cypher.ReturnConfig{Name: "p", Type: "age"}).
+		OrderBy(cypher.OrderByConfig{Name: "p", Member: "name"}).
 		Execute()
 
 	fmt.Println(callCypher)
@@ -35,41 +34,41 @@ func main() {
 	fmt.Println()
 
 	// example usage №2
-	charlie := pattern.NewNode().
+	charlie := cypher.NewNode().
 		SetVariable("charlie").
 		SetLabel("Person").
-		SetProps(pattern.Prop{Key: "name", Value: "Martin Sheen"})
+		SetProps(cypher.Prop{Key: "name", Value: "Martin Sheen"})
 
-	rob := pattern.NewNode().
+	rob := cypher.NewNode().
 		SetVariable("rob").
 		SetLabel("Person").
-		SetProps(pattern.Prop{Key: "name", Value: "Rob Reiner"})
+		SetProps(cypher.Prop{Key: "name", Value: "Rob Reiner"})
 
-	edge := pattern.NewEdge().
+	edge := cypher.NewEdge().
 		SetLabel("OLD FRIENDS").
-		SetPath(pattern.Incoming).
-		Relationship(pattern.FullRelationship{
+		SetPath(cypher.Incoming).
+		Relationship(cypher.FullRelationship{
 			LeftNode:  charlie,
 			RightNode: rob,
 		})
 
-	res, err := cypher.
-		NewQueryBuilder().
-		Match(edge).
-		With(pattern.WithConfig{Name: "next"}).
-		Call(
-			cypher.NewQueryBuilder().
-				With(pattern.WithConfig{Name: "next"}).
-				Match(pattern.NewNode().
-					SetVariable("current").
-					SetLabel("ListHead").AsPattern())).
-		Where(pattern.ConditionalConfig{
-			Name:              "rob",
-			Field:             "age",
-			ConditionOperator: pattern.EqualToOperator,
-			Check:             21}).
-		Return(pattern.ReturnConfig{Name: "charlie", As: "from"}, pattern.ReturnConfig{Name: "next", As: "to"}).
-		Execute()
+	res, err :=
+		cypher.NewQueryBuilder().
+			Match(edge).
+			With(cypher.WithConfig{Name: "next"}).
+			Call(
+				cypher.NewQueryBuilder().
+					With(cypher.WithConfig{Name: "next"}).
+					Match(cypher.NewNode().
+						SetVariable("current").
+						SetLabel("ListHead").AsPattern())).
+			Where(cypher.ConditionalConfig{
+				Name:              "rob",
+				Field:             "age",
+				ConditionOperator: cypher.EqualToOperator,
+				Check:             21}).
+			Return(cypher.ReturnConfig{Name: "charlie", As: "from"}, cypher.ReturnConfig{Name: "next", As: "to"}).
+			Execute()
 
 	fmt.Println(res)
 	if err != nil {

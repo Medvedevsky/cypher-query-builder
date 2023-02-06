@@ -1,9 +1,7 @@
-package test
+package cypher
 
 import (
 	"testing"
-
-	"github.com/Medvedevsky/cypher-query-builder/pkg/pattern"
 
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +12,7 @@ func TestReturnConfig_ToString(t *testing.T) {
 	var cypher string
 
 	//name not defined
-	t1 := pattern.ReturnConfig{
+	t1 := ReturnConfig{
 		Type: "a",
 		As:   "abc",
 	}
@@ -22,7 +20,7 @@ func TestReturnConfig_ToString(t *testing.T) {
 	req.NotNil(err)
 
 	//pattern
-	t4 := pattern.ReturnConfig{
+	t4 := ReturnConfig{
 		Name: "n",
 		Type: "m",
 	}
@@ -31,7 +29,7 @@ func TestReturnConfig_ToString(t *testing.T) {
 	req.EqualValues("n.m", cypher)
 
 	//pattern
-	t5 := pattern.ReturnConfig{
+	t5 := ReturnConfig{
 		Name: "n",
 		Type: "m",
 		As:   "abc",
