@@ -35,12 +35,7 @@ func (qb *QueryBuilder) mapConfigToString(clauses ...QueryConfig) string {
 
 func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 
-	if reflect.ValueOf(pattern).IsZero() {
-		qb.addError(errors.New("error match QueryPattern null"))
-		return ""
-	}
-
-	if !reflect.ValueOf(pattern.OnlyNode).IsZero() {
+	if pattern.OnlyNode != (OnlyNode{}) {
 		query, err := pattern.OnlyNode.Node.ToCypher()
 
 		if err != nil {
@@ -50,7 +45,7 @@ func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 		return query
 	}
 
-	if !reflect.ValueOf(pattern.PartialRelationship).IsZero() {
+	if pattern.PartialRelationship != (PartialRelationship{}) {
 		p := pattern.PartialRelationship
 		query, err := pattern.Edge.PartialRelationshipBuild(p)
 
@@ -61,7 +56,7 @@ func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 		return query
 	}
 
-	if !reflect.ValueOf(pattern.FullRelationship).IsZero() {
+	if pattern.FullRelationship != (FullRelationship{}) {
 		f := pattern.FullRelationship
 		query, err := pattern.Edge.RelationshipBuild(f)
 
@@ -72,6 +67,7 @@ func (qb *QueryBuilder) queryPatternMap(pattern QueryPattern) string {
 		return query
 	}
 
+	qb.addError(errors.New("error match QueryPattern null"))
 	return ""
 }
 
@@ -220,7 +216,7 @@ func (qb *QueryBuilder) With(withClauses ...WithConfig) *QueryBuilder {
 
 // ORDER BY clause
 func (qb *QueryBuilder) OrderBy(orderByClause OrderByConfig) *QueryBuilder {
-	if reflect.ValueOf(orderByClause).IsZero() {
+	if orderByClause != (OrderByConfig{}) {
 		qb.addError(errors.New("error empty OrderBy clause"))
 		return qb
 	}

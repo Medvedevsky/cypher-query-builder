@@ -2,7 +2,6 @@ package cypher
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 )
 
@@ -19,27 +18,12 @@ func (p Props) ToCypher() string {
 	if len(p) > 0 {
 		var propsArr []string
 		for key, prop := range p {
-
-			t := reflect.TypeOf(prop)
-			k := t.Kind()
-
-			if k == reflect.Bool {
-				propsArr = append(propsArr, fmt.Sprintf("%v: %t", key, prop.(bool)))
-				continue
-			}
-
-			if k == reflect.String {
-				propsArr = append(propsArr, fmt.Sprintf("%s: '%s'", key, prop))
-				continue
-			}
-
-			if k == reflect.Int || k == reflect.Int8 || k == reflect.Int16 || k == reflect.Int32 || k == reflect.Int64 ||
-				k == reflect.Uint || k == reflect.Uint8 || k == reflect.Uint16 || k == reflect.Uint32 || k == reflect.Uint64 ||
-				k == reflect.Float32 || k == reflect.Float64 {
+			switch prop.(type) {
+			case string:
+				propsArr = append(propsArr, fmt.Sprintf("%v: '%s'", key, prop))
+			default:
 				propsArr = append(propsArr, fmt.Sprintf("%v: %v", key, prop))
-				continue
 			}
-
 		}
 		props = fmt.Sprintf("{%v}", strings.Join(propsArr, ", "))
 	}
