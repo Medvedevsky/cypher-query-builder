@@ -27,7 +27,7 @@ func TestExampleMatch_Node(t *testing.T) {
 	var err error
 
 	/*
-		MATCH (n:`My Label``)
+		MATCH (n:`My Label`)
 		RETURN n
 	*/
 	node := NewNode().SetVariable("n").SetLabel("My Label").AsPattern()
