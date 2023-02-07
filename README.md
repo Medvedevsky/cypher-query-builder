@@ -5,38 +5,83 @@ Cypher Query Builder for Neo4j
 ## Example usage
 
 ``` go
-pNode := pattern.NewNode().SetVariable("p").SetLabel("Person").AsPattern()
-
-callCypher, err := cypher.NewQueryBuilder().
-	Call(cypher.NewQueryBuilder().
-		Match(pNode).
-		Return(pattern.ReturnConfig{Name: "p"}).
-		OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Asc: true}).
-		Limit(1).
-	Union(false).
-		Match(pNode).
-		Return(pattern.ReturnConfig{Name: "p"}).
-		OrderBy(pattern.OrderByConfig{Name: "p", Member: "age", Desc: true}).
-		Limit(1)).
-	Return(pattern.ReturnConfig{Name: "p", Type: "name"}, pattern.ReturnConfig{Name: "p", Type: "age"}).
-	OrderBy(pattern.OrderByConfig{Name: "p", Member: "name"}).
-	Execute()
+query, err := NewQueryBuilder().
+       Match(NewNode().SetVariable("n").AsPattern()).
+       Return(ReturnConfig{Name: "n"}).
+       Execute()
 ```
 
 ```
-CALL {
-  MATCH (p:Person)
-  RETURN p
-  ORDER BY p.age ASC
-  LIMIT 1
-UNION
-  MATCH (p:Person)
-  RETURN p
-  ORDER BY p.age DESC
-  LIMIT 1
-}
-RETURN p.name, p.age
-ORDER BY p.name
+MATCH (n)
+RETURN n
+```
+
+``` go
+node := NewNode().SetVariable("n").SetLabel("My Label").AsPattern()
+query, err := NewQueryBuilder().
+       Match(node).
+       Return(ReturnConfig{Name: "n"}).
+       Execute()
+```
+
+```
+MATCH (n:`My Label`)
+RETURN n
+```
+``` go
+node := NewNode().SetVariable("n").SetLabels(Сolon, "My Label", "Our Label").AsPattern()
+query, err := NewQueryBuilder().
+    Match(node).
+    Where(ConditionalConfig{
+    	Name:              "n",
+    	Field:             "attr1",
+    	ConditionOperator: EqualToOperator,
+    	Check:             "value 1",
+    	Condition:         AND}, ConditionalConfig{
+    	Name:              "n",
+    	Field:             "attr2",
+    	ConditionOperator: EqualToOperator,
+    	Check:             "value 2",
+    }).
+    Return(ReturnConfig{Name: "n"}).
+    Execute()
+```
+
+```
+MATCH (n:`My Label`:`Our Label`)
+WHERE n.attr1 = 'value 1' AND n.attr2 = 'value 2'
+RETURN n
+```
+
+``` go
+edge := NewEdge().SetPath(Outgoing).Relationship(FullRelationship{
+    LeftNode:  NewNode().SetVariable("n"),
+    RightNode: NewNode().SetVariable("m"),
+})
+query, err := NewQueryBuilder().
+    Match(NewNode().SetVariable("n").SetLabel("My Label").AsPattern()).
+    OptionlMath(edge).
+    Return(ReturnConfig{Name: "n"}, ReturnConfig{Name: "m"}).
+    Execute()
+```
+
+```
+MATCH (n:`My Label`)
+OPTIONAL MATCH (n)-[]->(m)
+RETURN n, m
+```
+
+```go
+node := NewNode().SetVariable("n").SetLabel("My Label").AsPattern()
+query, err := NewQueryBuilder().
+       Match(node).
+       Return(ReturnConfig{Name: "n", Type: "fitstProperty"}).
+       Execute()
+```
+
+```
+MATCH (n:`My Label`)
+RETURN n.fitstProperty
 ```
 
 ## Implemented Query Clauses
