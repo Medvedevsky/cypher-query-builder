@@ -54,7 +54,12 @@ func (condition *ConditionalConfig) ToString() (string, error) {
 	}
 
 	if condition.Check != nil {
-		query += fmt.Sprintf(" %v", condition.Check)
+		switch condition.Check.(type) {
+		case string:
+			query += fmt.Sprintf(" '%s'", condition.Check)
+		default:
+			query += fmt.Sprintf(" %v", condition.Check)
+		}
 	}
 
 	// if condition config not one
