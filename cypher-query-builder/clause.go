@@ -216,7 +216,7 @@ func (qb *QueryBuilder) With(withClauses ...WithConfig) *QueryBuilder {
 
 // ORDER BY clause
 func (qb *QueryBuilder) OrderBy(orderByClause OrderByConfig) *QueryBuilder {
-	if orderByClause != (OrderByConfig{}) {
+	if orderByClause == (OrderByConfig{}) {
 		qb.addError(errors.New("error empty OrderBy clause"))
 		return qb
 	}
